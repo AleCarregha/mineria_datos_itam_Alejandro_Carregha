@@ -26,6 +26,7 @@ book:
       chapters:
         - introduccion.ipynb
         - regresion_lineal.ipynb
+        - california_housing_case_study.ipynb
   open-graph: true
 
 bibliography: references.bib
