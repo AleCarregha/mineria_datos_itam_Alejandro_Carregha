@@ -38,6 +38,7 @@ F(x) = \sum_{m=1}^{M} \alpha_m h_m(x)
 $$
 
 donde:
+
 - $F(x)$ es la predicción final del modelo de boosting
 - $M$ es el número total de iteraciones (modelos débiles)
 - $h_m(x)$ es el $m$-ésimo aprendiz débil
@@ -58,14 +59,17 @@ Este proceso adaptativo y secuencial es lo que distingue fundamentalmente al boo
 La diferencia fundamental entre boosting y bagging se resume en dos dimensiones:
 
 **Construcción:**
+
 - **Bagging (Random Forest)**: Construye árboles **en paralelo e independientemente**. Cada árbol se entrena en una muestra bootstrap diferente sin comunicación entre ellos.
 - **Boosting**: Construye modelos **secuencialmente y adaptativamente**. Cada nuevo modelo depende explícitamente de los errores de los modelos anteriores.
 
 **Objetivo:**
+
 - **Bagging**: Reduce **varianza** promediando modelos complejos (árboles profundos)
 - **Boosting**: Reduce **sesgo** combinando modelos simples (árboles superficiales) que corrigen iterativamente los errores
 
 Esta diferencia tiene consecuencias importantes:
+
 - Bagging es fácilmente paralelizable (todos los árboles pueden entrenarse simultáneamente)
 - Boosting debe entrenarse secuencialmente (cada modelo necesita los resultados del anterior)
 - Bagging es muy robusto al ruido y outliers
@@ -319,11 +323,13 @@ La siguiente tabla resume las diferencias clave entre estos tres métodos de ens
 La diferencia entre construcción **paralela** (bagging/RF) y **secuencial** (boosting) tiene consecuencias prácticas importantes:
 
 **Paralelización:**
+
 - Bagging y Random Forest pueden entrenar todos los árboles simultáneamente en múltiples núcleos/máquinas
 - Boosting debe entrenar cada modelo después del anterior, limitando la paralelización
 - En sistemas distribuidos modernos, esto puede significar diferencias de velocidad de 10-100x
 
 **Adaptación:**
+
 - En bagging/RF, si un árbol comete errores, los otros árboles no lo "saben"
 - En boosting, cada modelo nuevo se construye específicamente para corregir los errores de los anteriores
 - Esto hace al boosting más "inteligente" pero también más susceptible a sobreajustar datos ruidosos
@@ -345,6 +351,7 @@ $$
 Los tres métodos atacan diferentes partes de esta ecuación:
 
 **Bagging y Random Forest**: Reducen **varianza**
+
 - Comienzan con aprendices base que tienen **baja sesgo** pero **alta varianza** (árboles profundos sin poda)
 - Un solo árbol profundo sobreajusta y varía mucho entre muestras de entrenamiento
 - Promediando muchos árboles, la varianza se reduce: $\text{Var}(\bar{X}) = \frac{\sigma^2}{n}$
@@ -352,6 +359,7 @@ Los tres métodos atacan diferentes partes de esta ecuación:
 - Random Forest agrega decorrelación entre árboles para mejorar aún más la reducción de varianza
 
 **Boosting**: Reduce **sesgo**
+
 - Comienza con aprendices base que tienen **alto sesgo** pero **baja varianza** (árboles superficiales, stumps)
 - Un solo árbol superficial es muy simple y subajusta (alto sesgo)
 - Combinando adaptativamente muchos modelos simples, cada uno corrigiendo los errores del anterior
@@ -625,6 +633,7 @@ Las curvas de aprendizaje revelan comportamientos distintivos:
 ## Cuándo usar Bagging vs Boosting
 
 **Usa Bagging (o Random Forest) cuando:**
+
 - Los datos tienen **mucho ruido** o outliers
 - Prefieres un modelo robusto que "no se rompa" fácilmente
 - Necesitas paralelización para datasets muy grandes
@@ -632,6 +641,7 @@ Las curvas de aprendizaje revelan comportamientos distintivos:
 - No te importa un tiempo de predicción ligeramente mayor
 
 **Usa Boosting cuando:**
+
 - Los datos son **relativamente limpios** con etiquetas confiables
 - Tienes un modelo con **alto sesgo** que necesitas mejorar
 - Estás dispuesto a invertir tiempo en ajustar hiperparámetros
@@ -646,6 +656,7 @@ Las curvas de aprendizaje revelan comportamientos distintivos:
 Para ayudar en la decisión, aquí hay una guía práctica:
 
 **Situaciones donde Random Forest es superior:**
+
 1. **Datos muy ruidosos**: Con muchos outliers o errores de etiquetado
 2. **Datasets desbalanceados**: Donde ciertas clases son raras
 3. **Features de alta cardinalidad**: Variables categóricas con muchos niveles
@@ -653,6 +664,7 @@ Para ayudar en la decisión, aquí hay una guía práctica:
 5. **Entrenamiento distribuido**: Tienes muchas máquinas disponibles
 
 **Situaciones donde Boosting es superior:**
+
 1. **Datos limpios y bien curados**: Con etiquetas confiables
 2. **Modelos simples fracasan**: Alto sesgo que necesitas reducir
 3. **Competencias de ML**: Donde cada 0.1% de accuracy importa
@@ -717,6 +729,7 @@ AdaBoost funciona manteniendo un **vector de pesos** sobre los ejemplos de entre
 La fórmula $\alpha_m = \frac{1}{2}\ln\frac{1-\epsilon_m}{\epsilon_m}$ no es arbitraria; surge naturalmente de la teoría de optimización.
 
 **Interpretación intuitiva:**
+
 - Si $\epsilon_m \approx 0$ (clasificador casi perfecto): $\alpha_m \to +\infty$ (peso muy alto)
 - Si $\epsilon_m = 0.5$ (clasificador aleatorio): $\alpha_m = 0$ (sin peso, se ignora)
 - Si $\epsilon_m > 0.5$ (peor que azar): $\alpha_m < 0$ (se invierte la predicción)
@@ -738,6 +751,7 @@ Para entender cómo AdaBoost adapta los pesos, consideremos un ejemplo simple co
 Los puntos están perfectamente separados en $x = 5.5$, excepto que agregamos **ruido**: cambiamos la etiqueta del punto $x=3$ a $+1$ (outlier).
 
 **Iteración 1:**
+
 - Pesos iniciales: todos $w_i = 0.1$ (uniforme)
 - Clasificador débil: encuentra división óptima en $x = 5.5$
 - Error: solo el outlier ($x=3$) se clasifica mal, $\epsilon_1 = 0.1$
@@ -745,6 +759,7 @@ Los puntos están perfectamente separados en $x = 5.5$, excepto que agregamos **
 - **Actualización de pesos**: el peso del outlier aumenta significativamente
 
 **Iteración 2:**
+
 - Ahora el outlier tiene peso ~0.3, mientras otros puntos tienen peso ~0.078
 - El siguiente clasificador se enfoca más en el outlier
 - Puede encontrar una división que lo clasifique correctamente, pero comete errores en otros puntos
@@ -757,11 +772,13 @@ Este proceso continúa, con AdaBoost tratando cada vez más agresivamente de cla
 AdaBoost tiene una vulnerabilidad importante: es **muy sensible a outliers** y datos con etiquetas erróneas.
 
 **El problema:**
+
 - Los pesos crecen exponencialmente: $w_i^{(m+1)} = w_i^{(m)} \exp(\alpha_m)$ para ejemplos mal clasificados
 - Si un ejemplo es imposible de clasificar correctamente (outlier o etiqueta errónea), su peso explotará
 - El algoritmo desperdicia iteraciones tratando de ajustarse a ruido irreducible
 
 **Consecuencias prácticas:**
+
 - En datasets limpios: AdaBoost funciona excelentemente
 - En datasets ruidosos: puede sobreajustar dramáticamente
 - Comparado con Random Forest: mucho menos robusto al ruido
@@ -816,7 +833,6 @@ for n_est in n_estimators_list:
         estimator=DecisionTreeClassifier(max_depth=1),
         n_estimators=n_est,
         learning_rate=1.0,
-        algorithm='SAMME',
         random_state=42
     )
     ada.fit(X_train, y_train)
@@ -938,7 +954,6 @@ ada_full = AdaBoostClassifier(
     estimator=DecisionTreeClassifier(max_depth=1),
     n_estimators=200,
     learning_rate=1.0,
-    algorithm='SAMME',
     random_state=42
 )
 ada_full.fit(X_train, y_train)
@@ -992,7 +1007,6 @@ ada_optimal = AdaBoostClassifier(
     estimator=DecisionTreeClassifier(max_depth=1),
     n_estimators=best_n,
     learning_rate=1.0,
-    algorithm='SAMME',
     random_state=42
 )
 ada_optimal.fit(X_train, y_train)
@@ -1047,6 +1061,7 @@ print(f"{'='*60}\n")
 AdaBoost funciona mejor en las siguientes situaciones:
 
 **✅ Usar AdaBoost cuando:**
+
 - Datos **limpios** con pocas etiquetas erróneas (< 5%)
 - Clasificación binaria o multiclase bien balanceada
 - Necesitas interpretabilidad (pesos de ejemplos + feature importance)
@@ -1055,6 +1070,7 @@ AdaBoost funciona mejor en las siguientes situaciones:
 - Dataset de tamaño pequeño a mediano (< 100K ejemplos)
 
 **❌ Evitar AdaBoost cuando:**
+
 - Datos con **mucho ruido** o outliers significativos
 - Etiquetas poco confiables o errores de anotación
 - Clases muy desbalanceadas sin balanceo previo
@@ -1062,6 +1078,7 @@ AdaBoost funciona mejor en las siguientes situaciones:
 - Dataset muy grande donde necesitas velocidad (considerar XGBoost/LightGBM)
 
 **Alternativas:**
+
 - Datos ruidosos → **Random Forest** o **Gradient Boosting con loss robusta**
 - Regresión → **Gradient Boosting** o **XGBoost**
 - Necesitas velocidad → **LightGBM** o **XGBoost**
@@ -1081,7 +1098,6 @@ ada = AdaBoostClassifier(
     estimator=DecisionTreeClassifier(max_depth=1),  # Aprendiz débil
     n_estimators=50,                                 # Número de iteraciones
     learning_rate=1.0,                               # Factor de shrinkage
-    algorithm='SAMME.R',                             # SAMME.R usa probabilidades
     random_state=42
 )
 
@@ -1104,11 +1120,8 @@ predictions = ada.predict(X_test)
    - Ayuda a prevenir sobreajuste
    - Requiere más `n_estimators` si es pequeño
 
-4. **`algorithm`**:
-   - `'SAMME'`: Versión discreta (clasificaciones duras)
-   - `'SAMME.R'`: Versión basada en probabilidades (usualmente mejor)
-
 **Consideraciones de preprocesamiento:**
+
 - AdaBoost funciona mejor con **features normalizadas**, aunque no es estrictamente necesario
 - **Identificar y remover outliers** mejora significativamente el rendimiento
 - Para clases desbalanceadas, considerar **balanceo previo** o `class_weight` en el clasificador base
@@ -1155,6 +1168,7 @@ Para entender Gradient Boosting, necesitamos una analogía con el descenso por g
 5. Repetir $M$ iteraciones
 
 **La analogía**: Imagine que está parado en una montaña (superficie de error) y quiere bajar al valle (mínimo). En cada paso:
+
 - **Descenso clásico**: Mide la pendiente donde está parado y da un paso en la dirección opuesta
 - **Gradient Boosting**: Mide cuánto error tiene en cada punto de datos, entrena un modelo que predice esos errores, y resta ese modelo de sus predicciones actuales
 
@@ -1170,6 +1184,7 @@ $$L(y, F(x)) = \exp(-y \cdot F(x))$$
 Si derivamos el gradiente de esta pérdida y construimos el algoritmo de Gradient Boosting correspondiente, recuperamos exactamente las actualizaciones de pesos de AdaBoost.
 
 **Implicaciones:**
+
 - AdaBoost optimiza una función objetivo específica (pérdida exponencial)
 - Gradient Boosting nos permite optimizar **cualquier** función objetivo
 - Para clasificación robusta, podemos usar **log-loss** en lugar de pérdida exponencial
@@ -1447,12 +1462,14 @@ Gradient Boosting tiene varios hiperparámetros críticos que controlan el balan
 Existe una relación inversa fundamental entre **learning rate** ($\nu$) y **número de estimadores** ($M$):
 
 **Learning rate bajo + Muchos estimadores:**
+
 - $\nu = 0.01$ con $M = 1000$
 - Aprendizaje muy gradual, cada árbol hace contribuciones pequeñas
 - **Ventajas**: Mejor generalización, menor sobreajuste, modelo más robusto
 - **Desventajas**: Entrenamiento muy lento, necesita más memoria
 
 **Learning rate alto + Pocos estimadores:**
+
 - $\nu = 0.5$ con $M = 50$
 - Aprendizaje agresivo, cada árbol hace grandes correcciones
 - **Ventajas**: Entrenamiento rápido, converge en pocas iteraciones
@@ -1462,6 +1479,7 @@ Existe una relación inversa fundamental entre **learning rate** ($\nu$) y **nú
 $$\nu \times M \approx \text{constante}$$
 
 Si reduces el learning rate a la mitad, necesitarás aproximadamente el doble de iteraciones para alcanzar el mismo rendimiento. En producción, valores típicos son:
+
 - $\nu = 0.1$ con $M = 100-500$
 - $\nu = 0.05$ con $M = 200-1000$
 - $\nu = 0.01$ con $M = 1000-5000$ (para competencias donde cada 0.001% importa)
@@ -1572,16 +1590,19 @@ plt.show()
 **Análisis de los efectos:**
 
 **Panel (a) - Learning Rate:**
+
 - **LR = 0.01**: Converge muy lentamente pero de forma muy suave. Necesita 150+ iteraciones para alcanzar buen rendimiento.
 - **LR = 0.1**: Balance óptimo en este caso - converge en ~50-100 iteraciones con buen rendimiento.
 - **LR = 0.5**: Converge rápidamente pero puede oscilar o sobreajustar en las últimas iteraciones.
 
 **Panel (b) - Max Depth:**
+
 - **Depth = 1** (stumps): Converge lentamente, modelo simple que puede tener alto sesgo residual.
 - **Depth = 3**: Excelente balance - captura interacciones importantes sin sobreajustar.
 - **Depth = 5**: Mejor rendimiento inicial, pero riesgo de sobreajuste en iteraciones posteriores.
 
 **Panel (c) - Subsample:**
+
 - **Subsample < 1.0**: Introduce estocasticidad (muestreo sin reemplazo) que actúa como regularización.
 - **Subsample = 0.7-0.8**: A menudo produce mejores resultados que 1.0, especialmente en datasets grandes.
 - Trade-off: Reduce varianza pero puede aumentar ligeramente el sesgo.
@@ -1611,11 +1632,13 @@ GradientBoostingRegressor(
 3. **Tercero**: `subsample` y `max_features` (regularización estocástica)
 
 **Para datasets grandes (>100K filas):**
+
 - Reduce `learning_rate` a 0.05
 - Aumenta `n_estimators` a 200-500
 - Usa `subsample=0.5-0.7` para velocidad
 
 **Para datasets pequeños (<1K filas):**
+
 - Usa `max_depth=2` (árboles más simples)
 - Aumenta `min_samples_leaf=20` (más regularización)
 - Considera Random Forest como alternativa más robusta
@@ -1762,12 +1785,14 @@ print(f"Iteraciones usadas: {gb_auto.n_estimators_}")
 Gradient Boosting puede sobreajustar fácilmente si no se regula adecuadamente. Las señales de advertencia incluyen:
 
 **Síntomas de sobreajuste:**
+
 - Gap grande y creciente entre error de train y test
 - Rendimiento en test empeora mientras train mejora
 - Modelo muy sensible a pequeños cambios en hiperparámetros
 - Predicciones extrañas en regiones con pocos datos
 
 **Causas comunes:**
+
 1. **Demasiadas iteraciones** sin early stopping
 2. **Árboles muy profundos** (max_depth > 5-7)
 3. **Learning rate muy alto** (>0.3) con muchas iteraciones
@@ -1775,6 +1800,7 @@ Gradient Boosting puede sobreajustar fácilmente si no se regula adecuadamente. 
 5. **Datos con ruido** o outliers (usar funciones de pérdida robustas)
 
 **Soluciones:**
+
 - ✅ **Siempre usar early stopping** con conjunto de validación
 - ✅ Reducir `max_depth` (empezar con 3)
 - ✅ Reducir `learning_rate` y compensar con más iteraciones
@@ -1877,6 +1903,7 @@ $$
 $$
 
 Aquí:
+
 - $T$ = número de hojas en el árbol
 - $w_j$ = peso (predicción) en la hoja $j$
 - $\gamma$ = penalización por número de hojas (complejidad del árbol)
@@ -1892,6 +1919,7 @@ Mientras que el gradient boosting clásico solo usa la primera derivada (gradien
 **3. Construcción de árbol eficiente**
 
 XGBoost utiliza algoritmos optimizados para encontrar los mejores splits:
+
 - **Exact greedy algorithm**: Enumera todos los posibles split points (para datasets pequeños)
 - **Approximate algorithm**: Usa histogramas y quantiles para proponer candidatos de split (para datasets grandes)
 - **Sparsity-aware algorithm**: Maneja eficientemente missing values y features sparse
@@ -1915,20 +1943,24 @@ XGBoost ha sido el algoritmo ganador o parte de la solución ganadora en la mayo
 XGBoost tiene muchos hiperparámetros, pero los más importantes son:
 
 **Estructura del árbol:**
+
 - `max_depth`: Profundidad máxima de cada árbol (típicamente 3-10)
 - `min_child_weight`: Suma mínima de weights (Hessian) en una hoja (análogo a min_samples_leaf)
 - `gamma`: Reducción mínima de loss necesaria para hacer un split (mayor = más conservador)
 
 **Regularización:**
+
 - `lambda` (reg_lambda): Regularización L2 en pesos de hojas (default = 1)
 - `alpha` (reg_alpha): Regularización L1 en pesos de hojas (default = 0)
 
 **Muestreo:**
+
 - `subsample`: Fracción de samples a usar por árbol (0.5-1.0)
 - `colsample_bytree`: Fracción de features a usar por árbol (0.5-1.0)
 - `colsample_bylevel`: Fracción de features a usar por nivel del árbol
 
 **Proceso de boosting:**
+
 - `learning_rate` (eta): Shrinkage de cada árbol (típicamente 0.01-0.3)
 - `n_estimators`: Número de árboles a construir
 - `objective`: Función de pérdida a optimizar
@@ -2148,113 +2180,6 @@ print(f"Mejor score de validación: {xgb_early.best_score:.4f}")
 print(f"Árboles ahorrados: {1000 - xgb_early.best_iteration}")
 ```
 
-Finalmente, veamos un ejemplo de hyperparameter tuning con Grid Search:
-
-```{python}
-#| label: xgboost-tuning
-#| fig-cap: "Grid Search para hiperparámetros de XGBoost"
-#| warning: false
-
-from sklearn.model_selection import GridSearchCV
-
-# Definir grid de hiperparámetros (versión simplificada)
-param_grid = {
-    'max_depth': [3, 5, 7],
-    'learning_rate': [0.01, 0.1, 0.3],
-    'subsample': [0.8, 1.0],
-    'colsample_bytree': [0.8, 1.0]
-}
-
-# Modelo base
-xgb_base = xgb.XGBRegressor(
-    n_estimators=100,
-    random_state=42
-)
-
-# Grid Search con CV
-grid_search = GridSearchCV(
-    xgb_base,
-    param_grid,
-    cv=3,
-    scoring='neg_root_mean_squared_error',
-    verbose=0,
-    n_jobs=-1
-)
-
-# Usar subset de datos para velocidad
-X_subset = X_train[:5000]
-y_subset = y_train[:5000]
-
-print("Ejecutando Grid Search...")
-grid_search.fit(X_subset, y_subset)
-
-# Resultados
-print(f"\nMejores hiperparámetros:")
-for param, value in grid_search.best_params_.items():
-    print(f"  {param}: {value}")
-
-print(f"\nMejor score (RMSE): {-grid_search.best_score_:.4f}")
-
-# Visualizar top 10 combinaciones
-results_df = pd.DataFrame(grid_search.cv_results_)
-top_10 = results_df.nsmallest(10, 'rank_test_score')[
-    ['param_max_depth', 'param_learning_rate',
-     'param_subsample', 'param_colsample_bytree',
-     'mean_test_score', 'std_test_score', 'rank_test_score']
-]
-
-fig, ax = plt.subplots(figsize=(12, 6))
-x_pos = np.arange(len(top_10))
-scores = -top_10['mean_test_score']
-stds = top_10['std_test_score']
-
-ax.bar(x_pos, scores, yerr=stds, capsize=5, color='#9b59b6', alpha=0.7)
-ax.set_xticks(x_pos)
-ax.set_xticklabels(
-    [f"Config {i+1}" for i in range(len(top_10))],
-    rotation=45
-)
-ax.set_ylabel('RMSE')
-ax.set_title('Top 10 Configuraciones de Hiperparámetros')
-ax.grid(axis='y', alpha=0.3)
-plt.tight_layout()
-plt.show()
-
-# Mostrar configuraciones
-print("\nTop 3 configuraciones:")
-for idx, row in top_10.head(3).iterrows():
-    print(f"\nRank {int(row['rank_test_score'])}:")
-    print(f"  max_depth: {row['param_max_depth']}")
-    print(f"  learning_rate: {row['param_learning_rate']}")
-    print(f"  subsample: {row['param_subsample']}")
-    print(f"  colsample_bytree: {row['param_colsample_bytree']}")
-    print(f"  RMSE: {-row['mean_test_score']:.4f} ± {row['std_test_score']:.4f}")
-```
-
-:::{.callout-tip}
-## Cuándo usar XGBoost
-
-Usa XGBoost cuando:
-- Trabajas con datos tabulares/estructurados
-- Necesitas el mejor balance entre precisión y velocidad
-- Quieres una implementación madura y bien documentada
-- Participas en competencias de ML (es el estándar de facto)
-- Necesitas flexibilidad en funciones objetivo y métricas de evaluación
-:::
-
-:::{.callout-important}
-## Instalación de XGBoost
-
-Para usar XGBoost, instálalo con:
-```bash
-conda install xgboost
-```
-
-Para soporte de GPU (opcional):
-```bash
-conda install xgboost[gpu]
-```
-:::
 
 ### 5.2 LightGBM (Light Gradient Boosting Machine) {#sec-lightgbm}
 
@@ -2305,10 +2230,12 @@ Level-wise:           Leaf-wise:
 ```
 
 **Ventajas del leaf-wise**:
+
 - Generalmente alcanza menor loss con el mismo número de splits
 - Más eficiente computacionalmente
 
 **Desventaja**:
+
 - Puede sobreajustar más fácilmente creando árboles muy profundos y desbalanceados
 - Se controla con `max_depth` y `num_leaves`
 
@@ -2326,6 +2253,7 @@ En lugar de buscar el mejor split considerando todos los valores posibles:
 LightGBM tiene algunos hiperparámetros únicos además de los estándar:
 
 **Específicos de LightGBM:**
+
 - `num_leaves`: Número máximo de hojas por árbol (más importante que `max_depth`)
 - `min_data_in_leaf`: Mínimo de samples en una hoja (previene overfitting)
 - `bagging_fraction` / `subsample`: Fracción de datos para cada árbol
@@ -2333,11 +2261,13 @@ LightGBM tiene algunos hiperparámetros únicos además de los estándar:
 - `max_bin`: Número de bins para histogram-based learning
 
 **Regularización:**
+
 - `lambda_l1`: Regularización L1
 - `lambda_l2`: Regularización L2
 - `min_gain_to_split`: Ganancia mínima para hacer un split
 
 **Control de velocidad:**
+
 - `num_threads`: Número de threads paralelos
 - `device_type`: 'cpu' o 'gpu'
 
@@ -2659,6 +2589,7 @@ for feat, imp in zip(imp_df['feature'], imp_df['importance']):
 ## Cuándo usar LightGBM
 
 Usa LightGBM cuando:
+
 - Tienes datasets grandes (>10,000 muestras, >100 features)
 - La velocidad de entrenamiento es crítica
 - Tienes muchas features categóricas
@@ -2678,19 +2609,6 @@ Debido al crecimiento leaf-wise más agresivo, LightGBM puede sobreajustar más 
 - `bagging_fraction`: Usa <1.0 para añadir randomness
 :::
 
-:::{.callout-note}
-## Instalación de LightGBM
-
-Para instalar LightGBM:
-```bash
-conda install lightgbm
-```
-
-Para soporte de GPU:
-```bash
-conda install lightgbm --install-option=--gpu
-```
-:::
 
 ### 5.3 CatBoost (Categorical Boosting) {#sec-catboost}
 
@@ -2705,11 +2623,13 @@ Una de las ventajas más apreciadas de CatBoost es que típicamente requiere muy
 Una de las innovaciones más importantes de CatBoost es su solución al problema del **prediction shift**:
 
 **El problema del prediction shift:**
+
 - En gradient boosting tradicional, calculamos los gradientes usando predicciones del modelo actual
 - Pero esas predicciones fueron generadas usando las mismas observaciones que ahora estamos usando para entrenar
 - Esto introduce un bias sutil: el modelo está "overfitting" a las observaciones de entrenamiento
 
 **Solución de CatBoost - Ordered Boosting:**
+
 - Usa diferentes permutaciones aleatorias del dataset para diferentes árboles
 - Para predecir la observación $i$, solo usa información de observaciones que aparecen antes de $i$ en la permutación
 - Esto simula el proceso de predicción en datos nuevos
@@ -2721,11 +2641,13 @@ La intuición es similar a time series forecasting: no puedes usar información 
 CatBoost tiene el mejor manejo de features categóricas entre todas las implementaciones de boosting:
 
 **Problema con one-hot encoding:**
+
 - Explota la dimensionalidad con categorías high-cardinality
 - Pierde información de frecuencias
 - No funciona bien con categorías raras
 
 **Problema con label encoding (1, 2, 3, ...):**
+
 - Introduce orden artificial
 - No captura relación con el target
 
@@ -2736,11 +2658,13 @@ Para cada categoría, calcula estadísticas del target (e.g., promedio), pero de
 $$\text{TargetStat}_i = \frac{\sum_{j=1}^{i-1} [x_j = \text{categoria}] \cdot y_j + \alpha \cdot P}{\sum_{j=1}^{i-1} [x_j = \text{categoria}] + \alpha}$$
 
 donde:
+
 - Solo usa observaciones anteriores en la permutación (ordered)
 - $\alpha$ y $P$ son parámetros de prior (regularización Bayesiana)
 - Previene target leakage perfectamente
 
 **Ventajas:**
+
 - No necesitas preprocesar categorías manualmente
 - Funciona con high-cardinality features
 - No explota dimensionalidad
@@ -2771,17 +2695,20 @@ CatBoost usa un tipo especial de árboles de decisión:
 En cada nivel, todos los nodos usan la misma condición de split.
 
 **Ventajas:**
+
 - Estructura más simple, menos propensa a overfitting
 - Predicción extremadamente rápida (solo $\log_2(N_{leaves})$ comparaciones)
 - Más fácil de paralelizar y optimizar
 - Mejor para deployment en producción
 
 **Desventaja:**
+
 - Menos expresivos que árboles normales (necesitas más profundidad)
 
 **4. Parámetros por defecto robustos**
 
 A diferencia de XGBoost y LightGBM, CatBoost está diseñado para funcionar bien sin tuning extensivo:
+
 - Ordered boosting reduce overfitting automáticamente
 - Regularización adecuada por defecto
 - Menos sensible a la elección de hiperparámetros
@@ -2791,23 +2718,28 @@ A diferencia de XGBoost y LightGBM, CatBoost está diseñado para funcionar bien
 CatBoost tiene una nomenclatura ligeramente diferente:
 
 **Estructura del árbol:**
+
 - `depth`: Profundidad del árbol (default = 6, rango típico 4-10)
 - `border_count`: Número de splits para features numéricas (similar a max_bins en LightGBM)
 
 **Proceso de boosting:**
+
 - `iterations`: Número de árboles (equivalente a n_estimators)
 - `learning_rate`: Shrinkage (default = auto, típicamente 0.03-0.3)
 
 **Regularización:**
+
 - `l2_leaf_reg`: Regularización L2 (default = 3.0)
 - `random_strength`: Cantidad de randomness en splits (default = 1.0)
 - `bagging_temperature`: Controla la intensidad del Bayesian bootstrap
 
 **Categorical features:**
+
 - `cat_features`: Índices o nombres de features categóricas
 - `one_hot_max_size`: Máximo número de categorías para usar one-hot en lugar de target statistics (default = 2)
 
 **Otros:**
+
 - `task_type`: 'CPU' o 'GPU'
 - `verbose`: Nivel de output durante entrenamiento
 
@@ -3139,6 +3071,7 @@ print(f"Iteraciones ahorradas: {1000 - cat_eval.best_iteration_}")
 ## Cuándo usar CatBoost
 
 Usa CatBoost cuando:
+
 - Tienes muchas features categóricas (especialmente high-cardinality)
 - No tienes tiempo para tuning extensivo de hiperparámetros
 - Necesitas un modelo robusto "out of the box"
@@ -3158,14 +3091,6 @@ CatBoost es particularmente bueno para sistemas de producción:
 4. **Pocos hiperparámetros críticos**: Menos cosas pueden salir mal
 5. **Modelo más estable**: Menos sensible a cambios en datos de entrada
 :::
-
-:::{.callout-note}
-## Instalación de CatBoost
-
-Para instalar CatBoost:
-```bash
-conda install catboost
-```
 
 CatBoost tiene soporte de GPU integrado, se activa automáticamente si está disponible o puedes especificar `task_type='GPU'`.
 :::
@@ -3522,6 +3447,7 @@ for model in ['XGBoost', 'LightGBM', 'CatBoost']:
 Con base en el análisis anterior, aquí hay una guía para elegir la implementación adecuada:
 
 **Elige XGBoost si:**
+
 - 🎯 **Uso general**: Es tu primera vez con boosting avanzado
 - 🏆 **Competencias**: Participas en Kaggle u otras competencias
 - 📚 **Documentación**: Necesitas documentación extensa y ejemplos
@@ -3530,6 +3456,7 @@ Con base en el análisis anterior, aquí hay una guía para elegir la implementa
 - ⚖️ **Balance**: Necesitas buen balance entre velocidad y precisión
 
 **Elige LightGBM si:**
+
 - ⚡ **Velocidad**: La velocidad de entrenamiento es crítica
 - 📊 **Datos grandes**: Tienes >50,000 muestras y >100 features
 - 💾 **Memoria limitada**: Tienes restricciones de memoria
@@ -3538,6 +3465,7 @@ Con base en el análisis anterior, aquí hay una guía para elegir la implementa
 - 📈 **Sparse features**: Tienes features muy sparse
 
 **Elige CatBoost si:**
+
 - 🏷️ **Categorías**: Tienes muchas features categóricas (especialmente high-cardinality)
 - ⏱️ **Poco tiempo**: No tienes tiempo para tuning extensivo
 - 🎯 **Defaults robustos**: Quieres buenos resultados sin mucho esfuerzo
@@ -3545,19 +3473,13 @@ Con base en el análisis anterior, aquí hay una guía para elegir la implementa
 - 🔒 **Estabilidad**: Priorizas reproducibilidad y estabilidad
 - 📦 **Out-of-the-box**: Prefieres que "funcione bien" desde el inicio
 
-**Elige sklearn GradientBoosting si:**
-- 📖 **Aprendizaje**: Estás aprendiendo los conceptos fundamentales
-- 🔬 **Datasets pequeños**: Tienes <10,000 muestras
-- 🧩 **Simplicidad**: Quieres la API más simple y familiar
-- 🔗 **Integración**: Ya usas sklearn extensivamente
-- 🎓 **Enseñanza**: Estás enseñando conceptos de ML
-
 :::{.callout-tip}
 ## Estrategia práctica
 
 En la práctica, muchos científicos de datos prueban las tres implementaciones modernas (XGBoost, LightGBM, CatBoost) y seleccionan la que mejor funciona para su problema específico. Las diferencias de rendimiento suelen ser pequeñas, pero consistentes.
 
 Una buena estrategia es:
+
 1. Comenzar con CatBoost (defaults robustos)
 2. Si la velocidad es un problema, probar LightGBM
 3. Si necesitas más control/flexibilidad, probar XGBoost
@@ -4262,12 +4184,14 @@ print("- L1 + L2 (Elastic Net): Combina ambos beneficios")
 ## Cuándo usar más regularización
 
 Aumenta la regularización cuando observes:
+
 - Gap grande entre training y validation error
 - El modelo es muy sensible a cambios pequeños en datos
 - Tienes muchas features de baja calidad o ruidosas
 - Dataset pequeño (<1000 muestras)
 
 Reduce la regularización cuando:
+
 - Training error es alto (underfitting)
 - Tienes un dataset muy grande y limpio
 - Las features son todas informativas
@@ -4375,6 +4299,7 @@ El balance adecuado entre estos parámetros determina si el modelo underfits, se
 **¿Cuándo usar boosting?**
 
 ✅ **Usa boosting cuando:**
+
 - Trabajas con datos tabulares/estructurados
 - Necesitas el máximo rendimiento predictivo
 - Tienes features numéricas y categóricas bien definidas
@@ -4382,6 +4307,7 @@ El balance adecuado entre estos parámetros determina si el modelo underfits, se
 - El problema es de clasificación o regresión supervisada
 
 ❌ **No uses boosting cuando:**
+
 - Tienes muy pocos datos (< 100 muestras)
 - Los datos son extremadamente ruidosos
 - Trabajas con imágenes, texto, o señales (considera deep learning)
@@ -4406,33 +4332,24 @@ El balance adecuado entre estos parámetros determina si el modelo underfits, se
 └─ Para aprendizaje: sklearn GradientBoosting
 ```
 
-### Relación con otros temas del curso
-
-**Métodos previos:**
-- **Regresión lineal/logística** (Capítulo 3): Boosting puede usar estos como base learners, aunque árboles son más comunes
-- **Árboles de decisión** (Capítulo 5): Los árboles individuales son los weak learners típicos en boosting
-- **Random Forest** (Capítulo 5): Hermano "paralelo" de boosting; ambos son ensemble methods
-
-**Métodos futuros:**
-- **Redes neuronales**: Complementarias a boosting; boosting domina en tabular, redes en imágenes/texto/audio
-- **Stacking/Blending**: Pueden combinar múltiples modelos de boosting para mejoras marginales
-- **AutoML**: Los sistemas de AutoML típicamente prueban múltiples algoritmos de boosting con diferentes hiperparámetros
-
 ### Recomendaciones prácticas finales
 
 **Para empezar:**
+
 1. Usa XGBoost con parámetros conservadores
 2. Implementa early stopping con conjunto de validación
 3. Compara con un baseline simple (regresión lineal o árbol único)
 4. Visualiza learning curves para detectar overfitting
 
 **Para mejorar:**
+
 1. Experimenta con las tres implementaciones modernas (XGBoost, LightGBM, CatBoost)
 2. Entiende el efecto de cada hiperparámetro principal
 3. Usa cross-validation para evaluar robustez
 4. Considera feature engineering (a menudo más importante que hiperparámetros)
 
 **Para producción:**
+
 1. Usa early stopping para evitar sobreajuste
 2. Serializa modelos con pickle/joblib o formato nativo
 3. Monitorea distribución de predicciones en producción
@@ -4445,12 +4362,14 @@ El balance adecuado entre estos parámetros determina si el modelo underfits, se
 En la práctica profesional, boosting + buenas features > boosting complejo + features mediocres.
 
 Dedica más tiempo a:
+
 - Entender tus datos
 - Crear features informativas
 - Validar correctamente
 - Evitar data leakage
 
 Y menos tiempo a:
+
 - Optimizar el último 0.1% de accuracy
 - Probar todas las combinaciones posibles de hiperparámetros
 - Usar arquitecturas excesivamente complejas
@@ -4459,6 +4378,7 @@ Y menos tiempo a:
 ### Recursos adicionales
 
 **Papers fundamentales:**
+
 - Freund & Schapire (1997): "A Decision-Theoretic Generalization of On-Line Learning and an Application to Boosting" - AdaBoost original
 - Friedman (2001): "Greedy Function Approximation: A Gradient Boosting Machine" - Gradient Boosting
 - Chen & Guestrin (2016): "XGBoost: A Scalable Tree Boosting System" - XGBoost
@@ -4466,12 +4386,14 @@ Y menos tiempo a:
 - Prokhorenkova et al. (2018): "CatBoost: unbiased boosting with categorical features" - CatBoost
 
 **Documentación oficial:**
+
 - XGBoost: https://xgboost.readthedocs.io/
 - LightGBM: https://lightgbm.readthedocs.io/
 - CatBoost: https://catboost.ai/docs/
 - scikit-learn: https://scikit-learn.org/stable/modules/ensemble.html
 
 **Para práctica:**
+
 - Kaggle competitions: Muchas competencias se ganan con boosting
 - UCI Machine Learning Repository: Datasets tabulares para experimentar
 - OpenML: Plataforma con datasets y benchmarks
