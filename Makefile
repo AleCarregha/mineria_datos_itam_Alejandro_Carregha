@@ -21,7 +21,7 @@ install-env:
 	conda env list | grep -q $(CONDA_ENV) || conda create -n $(CONDA_ENV) python=3.10 -y
 	source $$(conda info --base)/etc/profile.d/conda.sh && \
 	conda activate $(CONDA_ENV) && \
-	mamba install jupyter numpy pandas matplotlib seaborn scikit-learn nbclient ipykernel pyyaml xgboost -y
+	mamba install jupyter numpy pandas matplotlib seaborn scikit-learn nbclient ipykernel pyyaml xgboost lightgbm catboost -y
 
 clean:
 	rm -rf chapters/_freeze/

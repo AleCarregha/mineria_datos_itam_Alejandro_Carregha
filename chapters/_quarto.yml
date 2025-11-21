@@ -21,6 +21,7 @@ book:
         - ejercicio_wine_quality.ipynb
     - 04-clasificacion.qmd
     - 05-arboles.qmd
+    - 06-boosting.qmd
     - references.qmd
     - part: "Ejemplos"
       chapters:
