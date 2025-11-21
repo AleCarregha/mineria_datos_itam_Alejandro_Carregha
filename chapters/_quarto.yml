@@ -28,6 +28,7 @@ book:
         - introduccion.ipynb
         - regresion_lineal.ipynb
         - california_housing_case_study.ipynb
+        - operaciones_datos_pandas.ipynb
   open-graph: true
 
 bibliography: references.bib
